@@ -22,3 +22,16 @@ exports.getAllLists = async (req, res) => {
     const result = await listDAO.findAll();
     await res.status(200).json(result);
 };
+
+exports.deleteArticle = async (req, res) => {
+    const articleId = req.params.articleId;
+    const listId = req.body.listId || null;
+
+    if(listId) {
+        const result = await articleDAO.deleteOneByIdAndList(articleId, listId);
+        await res.status(200).json(result);
+    } else {
+        const result = await articleDAO.deleteOneById(articleId);
+        await res.status(200).json(result);
+    }
+};
