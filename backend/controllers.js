@@ -17,3 +17,8 @@ exports.getAllCategories = async (req, res) => {
     const result = await categoryDAO.findAll();
     await res.status(200).json(result);
 };
+
+exports.getAllLists = async (req, res) => {
+    const result = await listDAO.findAll();
+    await res.status(200).json(result);
+};
