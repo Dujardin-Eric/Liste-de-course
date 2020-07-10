@@ -8,7 +8,146 @@
     <script src="node_modules/jquery/dist/jquery.min.js"></script>
     <script>
         $(document).ready(function(){
+            const $list = $("#lists");
+            const $articleForm = $("#articleForm");
+            const $listForm = $("#listForm")
+            const $template = $("#rowTemplate").clone().removeAttr("id");
+            const $tbody = $("#tbody");
+            const $category = $("#category");
+            const $articleName = $("#articleName");
+            const $listName = $("#listName")
+;
+            const URL = "http://localhost:3000/";
 
+            var currentListId = null;
+            var articleList = [];
+
+            // Affichage des listes
+            function renderList(data){
+                $list.empty();
+
+                for(item of data) {
+                    let active = item.id === currentListId ? 'active' : '';
+                    $list.append($(`<li class="list-group-item ${active}" data-id="${item.id}">${item.nom}</li>`));
+                }
+            }
+
+            //requête AJAX pour afficher la liste
+            $.get(URL + "list")
+            .done(function (response) {
+                //console.log(response);
+                renderList(response);
+            }).fail(function(err){
+                console.log(err)
+            });
+
+            // Remplissage de la combobox catégories
+            function renderCategory(data){
+                $category.empty();
+
+                for(item of data) {
+                    $category.append($(`<option value="${item.id}">${item.nom}</option>`));
+                }
+            }
+
+            //requête AJAX pour afficher les catégories
+            $.get(URL + "category")
+            .done(function (response) {
+                //console.log(response);
+                renderCategory(response);
+            }).fail(function(err){
+                console.log(err)
+            });
+
+            // Remplissage de la table
+            function renderTable(data) {
+                $tbody.empty();
+                for(item of data){
+                    let $row = $template.clone();
+
+                    $row.children().first().text(item.nom);
+
+                    $row.find('button').data("id", item.id);
+
+                    $tbody.append($row);
+                }
+            }
+
+            //requête AJAX pour afficher les articles
+            $.get(URL + "article")
+            .done(function (response) {
+                articleList = response;
+                //console.log(response);
+                renderTable(response);
+            }).fail(function(err){
+                console.log(err)
+            });
+
+            // Suppresion d'un article
+            $tbody.delegate(".delete", "click", function(){
+                const id = ($(this).data("id"));
+                $.ajax({method:'delete', url: URL + 'article/' + id}, {listId: currentListId})
+                .done(function(response){
+                    renderTable(response);
+                    articleList = response;
+                }).fail(function(err){
+                    console.log(err);
+                })
+            });
+
+            // Séléction d'une liste
+            $list.delegate("li", "click", function(){
+                currentListId = $(this).data("id");
+                $list.find("li").removeClass("active");
+                $(this).addClass("active");
+                $.get(URL + 'article-list/' +currentListId)
+                .done(function(response){
+                    articleList = response;
+                    renderTable(response);
+                }).fail (function(err){
+                    console.log(err);
+                });
+            });
+
+            // Création d'un article
+            $articleForm.submit(function(event){
+                event.preventDefault();
+                data = {
+                    name: $articleName.val(),
+                    categoryId: $category.val(),
+                    listId: currentListId
+                };
+
+                $.post(URL + 'article', data)
+                .done(function(response){
+                    renderTable(response);
+                    articleList= response;
+
+                    $articleName.val('');
+                }).fail(function(err){
+                    console.log(err)
+                });
+            });
+
+            // Création d'une liste et ajout des articles
+            $listForm.submit(function(event){
+                event.preventDefault();
+                const articleIdList = articleList.map(function(item){
+                    return item.id
+                }).join(',');
+                const data = {
+                    listName: $listName.val(),
+                    articleIdList: articleIdList
+                };
+
+                $.post(URL + 'list', data)
+                .done(function(response){
+                    currentListId = response[response.length-1].id;
+                    renderList(reponse);
+                }).fail(function(err){
+                    console.log(err);
+                })
+            });
         });
     </script>
 </head>
@@ -49,7 +188,7 @@
                     <th>Article</th>
                     <th>Actions</th>
                 </tr>
-                <tbody>
+                <tbody id="tbody">
                     <tr id="rowTemplate">
                         <td></td>
                         <td>
