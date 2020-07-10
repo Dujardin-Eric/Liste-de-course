@@ -1,6 +1,7 @@
 const articleDAO = require('./models/article-model');
 const listDAO = require('./models/list-model');
 const categoryDAO = require('./models/category-model');
+const { addToList } = require('./models/article-model');
 
 exports.getAllArticles = async (req, res) => {
     const result = await articleDAO.findAll();
@@ -33,5 +34,22 @@ exports.deleteArticle = async (req, res) => {
     } else {
         const result = await articleDAO.deleteOneById(articleId);
         await res.status(200).json(result);
+    }
+};
+
+exports.insertArticle = async (req, res) => {
+    const article = {
+        nom: req.body.name,
+        id_categorie: req.body.categoryId,
+    }
+    const articleId = await articleDAO.insertOne(article);
+
+    if(req.body.listId) {
+        await articleDAO.addToList(articleId.insertId, req.body.listId);
+        const result = await articleDAO.findAllByListId(req.body.listId);
+        res.status(200).json(result);
+    } else {
+        const result = await articleDAO.findAll();
+        res.status(200).json(result);
     }
 };

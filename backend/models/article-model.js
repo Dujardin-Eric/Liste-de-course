@@ -33,6 +33,11 @@ dao.deleteOneById = async articleId => {
     await dao.query('DELETE FROM articles WHERE id=?', [articleId]);
     // Liste des articles
     return await dao.findAll();
-}
+};
+
+dao.addToList = async (articleId, listId) => {
+    const sql = "INSERT INTO articles_listes (id_article, id_liste) VALUES (?,?)";
+    return await dao.query(sql, [articleId, listId]);
+};
 
 module.exports = dao;
