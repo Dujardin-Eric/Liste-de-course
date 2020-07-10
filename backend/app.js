@@ -13,5 +13,8 @@ app.use(bodyParser.json());
 // Permet de gerer la récupération des infos d'un formulaire web
 app.use(bodyParser.urlencoded({extended: true}));
 
+// Référencemement des routes
+app.use(require('./routes'));
+
 // Lancement du serveur
 app.listen(3000, () => console.log('serveur started'));
