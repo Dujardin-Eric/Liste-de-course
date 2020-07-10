@@ -53,3 +53,8 @@ exports.insertArticle = async (req, res) => {
         res.status(200).json(result);
     }
 };
+
+exports.insertList = async (req, res) => {
+    const list = await listDAO.createList(req.body.listName, req.body.articlesIdList);
+    res.status(200).json(list);
+}
